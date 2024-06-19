@@ -16,7 +16,7 @@ app.post('/save_sub_brach', async (req, res) => {
 
     // Check if parent_id exists in the database
     const existingData = await collection.findOne({ child_id:child_id });
-    console.log(req.body, "found");
+ //   console.log(req.body, "found");
 
     // If parent_id exists and matches the one in the request body, insert the data
     if (!existingData) {
