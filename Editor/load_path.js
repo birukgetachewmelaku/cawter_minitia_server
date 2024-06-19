@@ -17,8 +17,8 @@ app.post('/load_path', async (req, res) => {
     }
 
     const checkPoints = await collection.aggregate([
-      { $match: { child_id: { $in: data } } },
-      { $project: { _id: 0, position_x: 1, position_y: 1, child_id: 1 } },
+      { $match: { root_id: { $in: data } } },
+      { $project: { _id: 0, position_x: 1, position_y: 1, child_id: 1, parent_id: 1 } },
     ]).toArray();
 
     // Send the retrieved check_point_x, check_point_y, and child_id values to the client
