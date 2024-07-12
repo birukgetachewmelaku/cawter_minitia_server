@@ -9,13 +9,14 @@ app.use(bodyParser.json({ limit: '50mb' }));
 
 app.post('/delete_path', async (req, res) => {
   try {
-    const { data } = req.body;
+    const { child_id } = req.body;
     const collection = await getMongoCollection();
 
     // Use the deleteMany() method to delete documents based on the query
-    const result = await collection.deleteMany({ chiled_id: data });
+    const result = await collection.deleteOne({ child_id: child_id });
 
     res.status(200).json({ deletedCount: result.deletedCount });
+    console.log("deleted",result,"....");
   } catch (err) {
     console.error('Error:', err);
     res.status(500).json({ error: 'Error deleting data from database' });
