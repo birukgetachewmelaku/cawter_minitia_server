@@ -11,12 +11,13 @@ const get_all_check_points_by_root_id = require('./the_bot/get_all_check_points_
 const save_bomb_explosion_input = require('./bomb_input/save_bomb_explosion_input.js');
 const get_null_bobm_input = require('./bomb_input/get_null_bobm_input.js');
 const test_dedicated_server = require('./test_dedicated_server.js');
+const delete_data = require('./delete_data.js');
 
 const app = express();
 
 
 
-/* app.use(cheack_brach_created);
+app.use(cheack_brach_created);
 app.use(create_main_branch);
 app.use(load_path);
 app.use(get_moving_path);
@@ -26,10 +27,11 @@ app.use(get_check_point);
 app.use(get_position);
 app.use(get_all_check_points_by_root_id);
 app.use(get_null_bobm_input);
-app.use(save_bomb_explosion_input); */
+app.use(save_bomb_explosion_input);
 app.use(test_dedicated_server);
+app.use(delete_data);
 
-app.listen(4009, () => {
+app.listen(4000, () => {
   console.log('Server is running on port 4000');
 });
 

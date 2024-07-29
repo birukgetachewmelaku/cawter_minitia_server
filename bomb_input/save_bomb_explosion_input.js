@@ -8,13 +8,14 @@ app.use(bodyParser.json({ limit: '50mb' }));
 
 app.post('/save_bomb_explosion_input', async (req, res) => {
     try {
-      const { child_id, check_point_indexs, throw_angle, exploded_pos_x, exploded_pos_y } = req.body;
+      const { child_id, throw_pos_x, throw_pos_y, throw_angle, exploded_pos_x, exploded_pos_y } = req.body;
       const collection = await getMongoCollection();
       const result = await collection.updateOne(
         { child_id: child_id },
         {
           $set: {
-            "check_point_indexs": check_point_indexs,
+            "throw_pos_x": throw_pos_x,
+            "throw_pos_y": throw_pos_y,
             "throw_angle": throw_angle,
             "exploded_pos_x": exploded_pos_x,
             "exploded_pos_y": exploded_pos_y

@@ -11,7 +11,8 @@ app.get('/get_null_bomb_input', async (req, res) => {
     const childData = await collection.findOne(
       {
         $or: [
-          { check_point_indexs: { $exists: false } },
+          { throw_pos_x: { $exists: false } },
+          { throw_pos_y: { $exists: false } },
           { throw_angle: { $exists: false } },
           { exploded_pos_x: { $exists: false } },
           { exploded_pos_y: { $exists: false } }
