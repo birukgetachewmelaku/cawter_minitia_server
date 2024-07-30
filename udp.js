@@ -12,7 +12,7 @@ server.on('listening', () => {
 });
 
 server.on('message', (message, remote) => {
-  console.log('Received message from client:', message.toString(), 'from:', remote.address, 'port:', remote.port,"::::::", ip_address[0]);
+  console.log('Received message from client:', message.toString(), 'from:', remote.address, 'port:', remote.port,"::::::");
   if (!ports.includes(remote.port)) {
       ports[ports.length] = remote.port;
       ip_address[ip_address.length] = remote.address;
