@@ -29,11 +29,12 @@ server.on('message', (message, remote) => {
   }
 });
 
-setInterval(reset_all_saved_networks, 120000);
+setInterval(reset_all_saved_networks, 60000);
 function reset_all_saved_networks(){
-  ip_address = [];
-  ports = [];
-  console.log("array reseted");
+  if(ports.length > 20){
+    ip_address = [];
+    ports = [];
+  }
 }
 server.bind(2222, serverAddress); // Bind the server to the desired port and server address
 
