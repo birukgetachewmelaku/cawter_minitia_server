@@ -2,7 +2,7 @@ const UDP = require('dgram');
 
 const server = UDP.createSocket('udp4');
 
-const serverAddress = '127.0.0.1'; // Replace with the actual server address
+const serverAddress = '128.140.100.243'; // Replace with the actual server address
 let ip_address = [];
 let ports = []
 
