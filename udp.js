@@ -2,7 +2,7 @@ const UDP = require('dgram');
 
 const server = UDP.createSocket('udp4');
 
-const serverAddress = '128.140.100.243'; // Replace with the actual server address
+const serverAddress = '127.0.0.1'; // Replace with the actual server address
 let ip_address = [];
 let ports = []
 
@@ -18,15 +18,13 @@ server.on('message', (message, remote) => {
       ip_address[ip_address.length] = remote.address;
   }
   for(let i=0; i<ports.length; i++){
-    if(ports[i] >= 55550 && ports[i] <= 55559){
-      server.send(message, 0, message.length, ports[i], ip_address[i], (err) => {
-        if (err) {
-          console.error('Failed to send packet to client!');
-        } else {
-          console.log('Packet sent to client!',ports[i]);
-        }
-      });
-    }
+    server.send(message, 0, message.length, ports[i], ip_address[i], (err) => {
+      if (err) {
+        console.error('Failed to send packet to client!');
+      } else {
+        console.log('Packet sent to client!',ports[i]);
+      }
+    });
     
   }
 });
