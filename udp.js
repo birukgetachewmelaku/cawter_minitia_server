@@ -1,11 +1,8 @@
 const dgram = require('dgram');
-
-const serverAddress = '127.0.0.1';
+const serverAddress = ' 209.38.32.43';
 const servers = new Map(); // Store created servers
 
-let timer = 0;
-// This will hold the Group map for access from other scripts
-const Groups = new Map();
+const Groups = new Map(); // This will hold the Group map for access from other scripts
 
 function createServer(port) {
   if (servers.has(port)) {
@@ -47,34 +44,21 @@ function createServer(port) {
   servers.set(port, server); // Store the server in the map
 }
 
-// Close server function
-function closeServer(port) {
-  if (servers.has(port)) {
-    const server = servers.get(port);
-    server.close(() => {
-      console.log(`Server on port ${port} closed.`);
-      servers.delete(port);
-      Groups.delete(port); // Remove the associated group
-    });
-  } else {
-    console.log(`No server found on port ${port}.`);
+// Function to clear the Group map for all servers
+function clearGroups() {
+  for (const [port, group] of Groups) {
+    group.clear(); // Clear the Group for this port
+    console.log(`Cleared Group for server on port ${port}`);
   }
 }
 
-// Export the createServer and closeServer functions and Groups map
-module.exports = { createServer, closeServer, Groups };
+// Set an interval to clear the Group map every 4 minutes (240,000 milliseconds)
+setInterval(clearGroups, 240000); // 240000 ms = 4 minutes
+
+// Export the createServer and clearGroups functions and Groups map
+module.exports = { createServer, Groups };
 
 // Example of calling the function to create servers
 createServer(41627); // Create server on port 41627
 createServer(41235); // Create server on port 41235
 console.log('Ready to create servers on demand.');
-
-// Example of making a POST request every second
-setInterval(() => {
-  timer++;
-}, 10); // 100 ms = 0.1 second
-
-// Example of closing a server
-setTimeout(() => {
-  closeServer(41627); // Close server on port 41627 after 10 seconds
-}, 10000);
