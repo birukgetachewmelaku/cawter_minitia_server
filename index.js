@@ -2,7 +2,6 @@ const express = require('express');
 const death_notify = require('./death_notify.js');
 require('./udp.js');
 
-const udp_manager = require('./create_udp_group.js');
 const app = express();
 
 
