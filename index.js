@@ -6,7 +6,6 @@ const app = express();
 
 
 
-app.use(udp_manager);
 app.use(death_notify);
 
 app.listen(4000, () => {
