@@ -1,155 +1,80 @@
-const UDP = require('dgram');
+const dgram = require('dgram');
 
-const server = UDP.createSocket('udp4');
+const serverAddress = '127.0.0.1';
+const servers = new Map(); // Store created servers
 
-const serverAddress = '128.140.100.243'; // Replace with the actual server address
-let ip_address = [];
-let ports = []
+let timer = 0;
+// This will hold the Group map for access from other scripts
+const Groups = new Map();
 
-server.on('listening', () => {
-  const address = server.address();
-  console.log('Server listening on', 'Address:', address.address, 'Port:', address.port);
-});
-
-server.on('message', (message, remote) => {
-  console.log('Received message from client:', message.toString(), 'from:', remote.address, 'port:', remote.port,"::::::");
-  if (!ports.includes(remote.port)) {
-      ports[ports.length] = remote.port;
-      ip_address[ip_address.length] = remote.address;
+function createServer(port) {
+  if (servers.has(port)) {
+    console.log(`Server on port ${port} already exists.`);
+    return;
   }
-  for(let i=0; i<ports.length; i++){
-    server.send(message, 0, message.length, ports[i], ip_address[i], (err) => {
-      if (err) {
-        console.error('Failed to send packet to client!');
-      } else {
-        console.log('Packet sent to client!',ports[i]);
-      }
-    });
-    
-  }
-});
 
-setInterval(reset_all_saved_networks, 60000);
-function reset_all_saved_networks(){
-  if(ports.length > 20){
-    ip_address = [];
-    ports = [];
-  }
-}
-server.bind(2222, serverAddress); // Bind the server to the desired port and server address
+  const server = dgram.createSocket('udp4');
+  const Group = new Map(); // Local Group for this server
 
+  // Store the Group map in the Groups map
+  Groups.set(port, Group);
 
+  server.on('error', (err) => {
+    console.log(`Server error (port ${port}):\n${err.stack}`);
+    server.close();
+  });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* const { debug } = require('console');
-const UDP = require('dgram');
-
-const server = UDP.createSocket('udp4');
-
-const clientPort = 8888;
-const clientAddress = 'localhost';
-
-const list_of_ip_adress = [];
-const time_track = [];
-
-
-
-server.on('listening', () => {
-  const address = server.address(); 
-  console.log('Server listening on', 'Address:', address.address, 'Port:', address.port);
-});
-server.on('message', (message, remote) => {
-  console.log('Received message from client:', message.toString(), 'from:', remote.address, 'port:', remote.port);
-  let qq = remote.port;
-  const ttt = Math.floor(qq / 10) * 10;
-  for(let i=qq; i<ttt+10; i++){
-    if(list_of_ip_adress[ttt]){
-      console.log("do sending method");
-      server.send(packet, 0, packet.length, ttt, list_of_ip_adress[ttt], (err) => {
+  server.on('message', (msg, rinfo) => {
+    for (const [client, { address: endpointAddress, port: endpointPort }] of Group) {
+      server.send(msg, 0, msg.length, endpointPort, endpointAddress, (err) => {
         if (err) {
-          console.error('Failed to send packet to client!');
-        } else { 
-          console.log('Packet sent to client!');
+          console.error(`Failed to send packet to client ${client}:`, err);
+        } else {
+          console.log(`Packet sent to client ${client}`);
         }
       });
     }
-  }
-});
-
-server.bind(2222, 'localhost');
-// Send data to the client
-const message = 'Hello, client!';
-const packet = Buffer.from(message);
-
-function qqq(){
-  const ttt = Math.floor(8881 / 10) * 10;
-  list_of_ip_adress[2] = "127.0.0.1";
-  server.send(packet, 0, packet.length, clientPort, clientAddress, (err) => {
-    if (err) {
-      console.error('Failed to send packet to client!');
-    } else { 
-      console.log('Packet sent to client!');
-    }
+    Group.set(rinfo.address + ':' + rinfo.port, { address: rinfo.address, port: rinfo.port, time: timer });
+    console.log(`${Group.size} clients connected on port ${port}`);
   });
+
+  server.on('listening', () => {
+    const address = server.address();
+    console.log(`Server (port ${port}) listening at ${serverAddress}:${address.port}`);
+  });
+
+  server.bind(port, serverAddress);
+  servers.set(port, server); // Store the server in the map
 }
 
-//setInterval(qqq, 30);
-
-function greet() {
-    for(let i=3000; i<1000000; i++){
-        if(time_track[i] > 30){
-            return i;
-        }
-    }
+// Close server function
+function closeServer(port) {
+  if (servers.has(port)) {
+    const server = servers.get(port);
+    server.close(() => {
+      console.log(`Server on port ${port} closed.`);
+      servers.delete(port);
+      Groups.delete(port); // Remove the associated group
+    });
+  } else {
+    console.log(`No server found on port ${port}.`);
   }
-  
-  module.exports = greet; */
+}
+
+// Export the createServer and closeServer functions and Groups map
+module.exports = { createServer, closeServer, Groups };
+
+// Example of calling the function to create servers
+createServer(41627); // Create server on port 41627
+createServer(41235); // Create server on port 41235
+console.log('Ready to create servers on demand.');
+
+// Example of making a POST request every second
+setInterval(() => {
+  timer++;
+}, 10); // 100 ms = 0.1 second
+
+// Example of closing a server
+setTimeout(() => {
+  closeServer(41627); // Close server on port 41627 after 10 seconds
+}, 10000);
