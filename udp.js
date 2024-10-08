@@ -1,5 +1,5 @@
 const dgram = require('dgram');
-const serverAddress = ' 209.38.32.43';
+const serverAddress = '209.38.32.43';
 const servers = new Map(); // Store created servers
 
 const Groups = new Map(); // This will hold the Group map for access from other scripts
