@@ -3,7 +3,7 @@ const dgram = require('dgram');
 
 const numServers = 10;
 const startPort = 41234;
-const serverAddress = '209.38.32.43';
+const serverAddress = '127.0.0.1';
 
 const servers = Array.from({ length: numServers }, (_, i) => {
   const server = dgram.createSocket('udp4');
