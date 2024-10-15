@@ -1,4 +1,3 @@
-const { group } = require('console');
 const dgram = require('dgram');
 
 const numServers = 10;
