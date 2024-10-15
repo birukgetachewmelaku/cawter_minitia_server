@@ -5,7 +5,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 
 let counter_ = 0;
 let container = [];
-app.post('/test1', async (req, res) => {
+app.post('/test_ram', async (req, res) => {
   try {
     const { counter } = req.body;
     counter_ = counter;
@@ -19,10 +19,11 @@ app.post('/test1', async (req, res) => {
     res.status(500).json({ error: 'Error retrieving data from database' });
   }
 });
-app.get('/get_counter', async (req, res) => {
+app.get('/clear_ram', async (req, res) => {
     try {
       console.log("##################",req.body);
-      res.status(200).json(counter_);
+      container = [];
+      res.status(200).json(container.length);
     } catch (err) {
       console.error('Error:', err);
       res.status(500).json({ error: 'Error retrieving data from database' });
