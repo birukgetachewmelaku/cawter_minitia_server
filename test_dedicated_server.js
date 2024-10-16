@@ -30,6 +30,16 @@ app.get('/clear_ram', async (req, res) => {
     }
   });
 
+  app.get('/unix_time', async (req, res) => {
+    try {
+      const currentUnixTime = Math.floor(Date.now() / 1000);
+      console.log("##################",currentUnixTime);
+      res.status(200).json(currentUnixTime);
+    } catch (err) {
+      console.error('Error:', err);
+      res.status(500).json({ error: 'Error retrieving data from database' });
+    }
+  });
 
   function generateRandomString() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

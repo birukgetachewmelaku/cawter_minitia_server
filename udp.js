@@ -15,7 +15,16 @@ const servers = Array.from({ length: numServers }, (_, i) => {
   });
 
   server.on('message', (msg, rinfo) => {
-    //console.log(`Server (port ${port}) got: ${msg} from ${rinfo.address}:${rinfo.port}`);
+    const currentTime = Math.floor(Date.now() / 1000); // Get current Unix time
+
+    // Add/update client info with current Unix time
+    Group.set(rinfo.address + ':' + rinfo.port, {
+      address: rinfo.address,
+      port: rinfo.port,
+      lastActive: currentTime // Store last active time
+    });
+
+    // Send the message to all clients in the group
     for (const [client, { address: endpointAddress, port: endpointPort }] of Group) {
       server.send(msg, 0, msg.length, endpointPort, endpointAddress, (err) => {
         if (err) {
@@ -25,16 +34,29 @@ const servers = Array.from({ length: numServers }, (_, i) => {
         }
       });
     }
-    Group.set(rinfo.address + ':' + rinfo.port, { address: rinfo.address, port: rinfo.port });
-    console.log(Group.size,"ppppppppppppp",port);
+
+    console.log(Group.size, "clients connected to port", port);
   });
 
   server.on('listening', () => {
     const address = server.address();
-    console.log(`Server (port ${port}) listening ${serverAddress}:${address.port}.....${servers[7]}`);
+    console.log(`Server (port ${port}) listening at ${serverAddress}:${address.port}`);
   });
 
   server.bind(port, serverAddress);
+
+  // Periodically check for inactive clients
+  setInterval(() => {
+    const currentTime = Math.floor(Date.now() / 1000); // Get current Unix time
+    for (const [clientKey, clientData] of Group) {
+      // Check if the client has been inactive for more than 7 seconds
+      if (currentTime - clientData.lastActive > 7) {
+        console.log(`Removing inactive client: ${clientKey}`);
+        Group.delete(clientKey); // Remove inactive client
+      }
+    }
+  }, 5000); // Check every 5 seconds
+
   return server;
 });
 
