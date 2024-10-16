@@ -4,10 +4,12 @@ const numServers = 10;
 const startPort = 41234;
 const serverAddress = '209.38.32.43';
 
-const servers = Array.from({ length: numServers }, (_, i) => {
+const servers = [];
+
+// Function to create a UDP server
+const createServer = (port) => {
   const server = dgram.createSocket('udp4');
-  const port = startPort + i;
-  const Group = new Map();
+  const clients = new Map(); // Local map for tracking clients for this server
 
   server.on('error', (err) => {
     console.log(`Server error (port ${port}):\n${err.stack}`);
@@ -18,25 +20,26 @@ const servers = Array.from({ length: numServers }, (_, i) => {
     const currentTime = Math.floor(Date.now() / 1000); // Get current Unix time
 
     // Add/update client info with current Unix time
-    Group.set(rinfo.address + ':' + rinfo.port, {
-      address: rinfo.address,
-      port: rinfo.port,
-      lastActive: currentTime // Store last active time
+    clients.set(rinfo.address + ':' + rinfo.port, {
+        address: rinfo.address,
+        port: rinfo.port,
+        lastActive: currentTime // Store last active time
     });
 
-    // Send the message to all clients in the group
-    for (const [client, { address: endpointAddress, port: endpointPort }] of Group) {
-      server.send(msg, 0, msg.length, endpointPort, endpointAddress, (err) => {
-        if (err) {
-          console.error(`Failed to send packet to client ${client}:`, err);
-        } else {
-          console.log(`Packet sent to client ${client}`);
-        }
-      });
-    }
+    // Broadcast the message to all clients connected to this server
+    clients.forEach((clientData, clientKey) => {
+        // Send the message to each client in the local clients map
+        server.send(msg, 0, msg.length, clientData.port, clientData.address, (err) => {
+            if (err) {
+                console.error(`Failed to send packet to client ${clientKey}:`, err);
+            } else {
+                console.log(`Packet sent to client ${clientKey}`);
+            }
+        });
+    });
 
-    console.log(Group.size, "clients connected to port", port);
-  });
+    console.log(clients.size, "clients connected to port", port);
+});
 
   server.on('listening', () => {
     const address = server.address();
@@ -44,21 +47,32 @@ const servers = Array.from({ length: numServers }, (_, i) => {
   });
 
   server.bind(port, serverAddress);
+  return { server, clients };
+};
 
-  // Periodically check for inactive clients
-  setInterval(() => {
-    const currentTime = Math.floor(Date.now() / 1000); // Get current Unix time
-    for (const [clientKey, clientData] of Group) {
-      // Check if the client has been inactive for more than 7 seconds
-      if (currentTime - clientData.lastActive > 7) {
+// Create all UDP servers
+for (let i = 0; i < numServers; i++) {
+  const port = startPort + i;
+  const { server, clients } = createServer(port);
+  servers.push({ server, clients });
+}
+
+// Function to check and remove inactive clients
+const checkInactiveClients = () => {
+  const currentTime = Math.floor(Date.now() / 1000); // Get current Unix time
+  servers.forEach(({ clients }) => {
+    clients.forEach((clientData, clientKey) => {
+      // Check if the client has been inactive for more than 5 seconds
+      if (currentTime - clientData.lastActive > 5) {
         console.log(`Removing inactive client: ${clientKey}`);
-        Group.delete(clientKey); // Remove inactive client
+        clients.delete(clientKey); // Remove inactive client
       }
-    }
-  }, 5000); // Check every 5 seconds
+    });
+  });
+};
 
-  return server;
-});
+// Set up a single interval to check inactive clients
+setInterval(checkInactiveClients, 5000); // Check every 5 seconds
 
 console.log('All servers started.');
 
